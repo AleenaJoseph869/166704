@@ -1,0 +1,134 @@
+# stage 1
+# Build Docker Image
+# Publish the K8S Files
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  tag: 0.0.1.RELEASE
+  #'$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+ #   - task: Docker@2
+  #    displayName: Build an image
+   #   inputs:
+    #    containerRegistry: 'sonu-docker-hub'
+    #    repository: 'sonubj / currency-exchange'
+     #   command: 'buildAndPush'
+      #  Dockerfile: '**/Dockerfile'
+       # tags: '$(tag)'
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: '**/*.yaml'
+        TargetFolder: '$(System.ArtifactsDirectory)'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'manifests'
+        publishLocation: 'Container'
+  
+- stage: Deply
+  displayName: Deploy Image
+  jobs:
+  - job: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: ubuntu-latest
+    steps:      
+         - task: DownloadPipelineArtifact@2
+           inputs:
+             buildType: 'current'
+             artifactName: 'manifests'
+             itemPattern: '**/*.yaml'
+             targetPath: '$(System.ArtifactsDirectory)'
+         - task: KubernetesManifest@0
+           inputs:
+             action: 'deploy'
+             kubernetesServiceConnection: 'azure-kubernetes-connection'
+             namespace: 'default'
+             manifests: '$(System.ArtifactsDirectory)/configuration/kubernetes/deployment.yaml'
+             containers: 'sonubj/currency-exchange:$(tag)'
+#stage 2
+# Download K8s files
+# Deploy to K8S Cluster
+
+
+# stage 1
+# Build Docker Image
+# Publish the K8S Files
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+  tag: 0.0.1.RELEASE
+  #'$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+ #   - task: Docker@2
+  #    displayName: Build an image
+   #   inputs:
+    #    containerRegistry: 'sonu-docker-hub'
+    #    repository: 'sonubj / currency-exchange'
+     #   command: 'buildAndPush'
+      #  Dockerfile: '**/Dockerfile'
+       # tags: '$(tag)'
+    - task: CopyFiles@2
+      inputs:
+        SourceFolder: '$(System.DefaultWorkingDirectory)'
+        Contents: '**/*.yaml'
+        TargetFolder: '$(System.ArtifactsDirectory)'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'manifests'
+        publishLocation: 'Container'
+  
+- stage: Deply
+  displayName: Deploy Image
+  jobs:
+  - job: Deploy
+    displayName: Deploy
+    pool:
+      vmImage: ubuntu-latest
+    steps:      
+         - task: DownloadPipelineArtifact@2
+           inputs:
+             buildType: 'current'
+             artifactName: 'manifests'
+             itemPattern: '**/*.yaml'
+             targetPath: '$(System.ArtifactsDirectory)'
+         - task: KubernetesManifest@0
+           inputs:
+             action: 'deploy'
+             kubernetesServiceConnection: 'azure-kubernetes-connection'
+             namespace: 'default'
+             manifests: '$(System.ArtifactsDirectory)/configuration/kubernetes/deployment.yaml'
+             containers: 'sonubj/currency-exchange:$(tag)'
+#stage 2
+# Download K8s files
+# Deploy to K8S Cluster
+
+
